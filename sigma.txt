@@ -1,0 +1,102 @@
+const CLIENT_PACKETS = {
+    CRAFT: "craft",
+    USE: "use",
+    RECYCLE: "recycle",
+    CAMERA_SEND: "camera_send"
+};
+     switch (type) {
+     case CLIENT_PACKETS.CRAFT: {
+     socket.send(JSON.stringify([25, 28]));
+
+} break;
+
+let master = Symbol();
+
+Object.defineProperty(Object.prototype, 'opacity', {
+    get() {
+        this[master] = 0.4
+        return this[master];
+    },
+    set(data) {
+
+        this[master] = data;
+    }
+});
+const observer = new MutationObserver(function(mutations) {
+    for (const mutation of mutations) {
+        for (const node of mutation.addedNodes) {
+            if (
+                node.src &&
+                (
+                    node.src.includes("server.cmpstar.net") ||
+                    node.src.includes("sdk.truepush.com") ||
+                    node.src.includes("sdki.truepush.com") ||
+                    node.src.includes("adinplay") ||
+                    node.src.includes("amazon-adsystem.com") ||
+                    node.src.includes("www.google-analytics.com") ||
+                    node.src.includes("ib.adnxs.com") ||
+                    node.src.includes("targeting.unrulymedia.com") ||
+                    node.src.includes("www.google-analytics.com") ||
+                    node.src.includes("pagead2.googlesyndication.com") ||
+                    node.src.includes("doubleclick.net") ||
+                    node.src.includes("script.4dex.io")
+                )
+            ) {
+                node.src = "";
+                node.innerHTML = "";
+                node.textContent = "";
+            }
+
+            if(node.className === "wg-ad-container") {
+                setTimeout(function() {
+                    document.querySelector(".wg-ad-player").currentTime = 20;
+                }, 1);
+            }
+        }
+    }
+});
+
+observer.observe(document, {
+    childList: true,
+    attributes: true,
+    subtree: true
+});
+socket.addEventListener('message', messageHandler);
+socket.addEventListener('close', closeHandler);
+var socketProxy = new Proxy(socket.send, {
+    apply: function(target, thisArg, args) {
+        const raw = args[0];
+        let message = [];
+        switch (typeof raw) {
+            case "string": {
+                message = JSON.parse(raw);
+                const type = message[0];
+
+                switch (type) {
+                    case CLIENT_PACKETS.CRAFT: {
+                        socket.send(JSON.stringify([CLIENT_PACKETS.USE, 28]));
+                        autocraft.lastID = message[1];
+                    } break;
+                    case CLIENT_PACKETS.RECYCLE: {
+                        autorecycle.lastID = message[1];
+                    } break;
+                    case CLIENT_PACKETS.CAMERA_SEND: {
+                        message[1] += 300;
+                        message[2] += 150;
+                    } break;
+                }
+
+
+                args[0] = JSON.stringify(message);
+            } break;
+            case "object": {
+            } break;
+        }
+
+        log(thisArg, args);
+        return target.apply(thisArg, args);
+    }
+});
+
+
+
